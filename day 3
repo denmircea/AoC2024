@@ -1,0 +1,77 @@
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+using namespace std;
+
+ifstream fin("test.in");
+
+
+int main()
+{
+	long long result = 0;
+	char c;
+	bool enabled = true;
+	/// detect if there is any text matching the pattern mul(A,B)
+	while (fin >> c) {
+		if (c == 'm') {
+			fin >> c;
+			if (c == 'u') {
+				fin >> c;
+				if (c == 'l') {
+					fin >> c;
+					if (c == '(') {
+						int nr1 = 0, nr2 = 0;
+						while (fin >> c) {
+							if (c < '0' || c>'9') break;
+							nr1 = nr1 * 10 + c - '0';
+						}
+						if (c == ',') {
+							while (fin >> c) {
+								if (c < '0' || c>'9') break;
+								nr2 = nr2 * 10 + c - '0';
+							}
+							if (c == ')') {
+								if (enabled)
+								{
+									result += nr1 * nr2;
+									cout << "mul(" << nr1 << "," << nr2 << ")\n";
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		if (c == 'd') {
+			fin >> c;
+			if (c == 'o') {
+				fin >> c;
+				if (c == '(') {
+					fin >> c;
+					if (c == ')') {
+						enabled = true;
+					}
+				}
+				else if (c == 'n') {
+					fin >> c;
+					if (c == 39) {
+						fin >> c;
+						if (c == 't') {
+							fin >> c;
+							if (c == '(') {
+								fin >> c;
+								if (c == ')') {
+									enabled = false;
+								}
+							}
+						}
+					
+					}
+				}
+			}
+		}
+	}
+	cout << result;
+}
+
