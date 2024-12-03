@@ -1,0 +1,54 @@
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+using namespace std;
+
+ifstream fin("test.in");
+
+bool validpart2(vector<int> v,int poz) {
+	/// erase poz and shift all elements to the left
+	v.erase(v.begin() + poz);
+	bool cresc = false, scad = false;
+	for (int i = 1;i < v.size();i++) {
+		int dif = abs(v[i] - v[i - 1]);
+		if (dif < 1 || dif>3) {
+			return false;
+		}
+		if (v[i] > v[i - 1]) {
+			cresc = true;
+		}
+		else {
+			scad = true;
+		}
+	}
+	return (cresc ^ scad);
+}
+
+bool validate(vector<int> v) {
+	bool result = false;
+	for (int i = 0;i < v.size();i++) {
+		bool res = validpart2(v, i);
+		result |= res;
+	}
+	return result;
+}
+int main()
+{
+	int x;
+	int valid = 0;
+	vector<int> v;
+	while (fin >> x) {
+		if (x == 1000) {
+			if (validate(v)) {
+				valid++;
+			}
+			v.clear();
+		}
+		else {
+			v.push_back(x);
+		}
+	}
+	cout << valid;
+}
+
