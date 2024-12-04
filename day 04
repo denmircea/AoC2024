@@ -1,0 +1,73 @@
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+using namespace std;
+
+ifstream fin("test.in");
+
+
+int main()
+{
+	int dx[] = { -1,-1,0,1,1,1,0,-1 };
+	int dy[] = { 0,1,1,1,0,-1,-1,-1 };
+	vector<string> v;
+	string s;
+	int cnt = 0;
+	while (fin >> s) {
+		v.push_back(s);
+	}
+	for (int i = 1;i < s.size() - 1;i++) {
+		for (int j = 1;j < v[i].size() - 1;j++) {
+			if (v[i][j] == 'A') {
+				char a = v[i - 1][j - 1];
+				char b = v[i - 1][j + 1];
+				char c = v[i + 1][j - 1];
+				char d = v[i + 1][j + 1];
+				if ((a == 'M' || d == 'M') && (a == 'S' || d == 'S')) {
+					if (b == 'M' || c == 'M') {
+						if (b == 'S' || c == 'S') {
+							cnt++;
+						}
+					}
+
+				}
+			}
+		}
+	}
+	cout << cnt;
+}
+
+
+
+//int dx[] = { -1,-1,0,1,1,1,0,-1 };
+//int dy[] = { 0,1,1,1,0,-1,-1,-1 };
+//vector<string> v;
+//string s;
+//int cnt = 0;
+//while (fin >> s) {
+//	v.push_back(s);
+//}
+//for (int i = 0;i < s.size();i++) {
+//	for (int j = 0;j < v[i].size();j++) {
+//		if (v[i][j] == 'X') {
+//			for (int dir = 0;dir <= 7;dir++) {
+//				/// match XMAS, x is already matched
+//				int x = i, y = j;
+//				for (int k = 1;k < 4;k++) {
+//					x += dx[dir];
+//					y += dy[dir];
+//					if (x < 0 || x >= v.size() || y < 0 || y >= v[i].size() || v[x][y] != "XMAS"[k]) {
+//						break;
+//					}
+//					if (k == 3) {
+//						cout << i << " " << j << endl;
+//						cnt++;
+//					}
+//				}
+//			}
+//		}
+//	}
+//}
+//cout << cnt;
+//
