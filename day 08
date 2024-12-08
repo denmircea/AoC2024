@@ -1,0 +1,97 @@
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <map>
+#include <set>
+using namespace std;
+
+ifstream fin("test.in");
+ifstream fin2("test2.in");
+vector<string>v2;
+
+
+bool valid(int x, int y) {
+	if (x < 0 || y < 0 || x >= v2.size() || y >= v2[0].size()) {
+		return false;
+	}
+	
+	return true;
+}
+
+int cnt2 = 0;
+
+void match(pair<int, int>a, pair<int, int>b) {
+	int x1 = a.first;
+	int y1 = a.second;
+	int x2 = b.first;
+	int y2 = b.second;
+	int dx = x2 - x1;
+	int dy = y2 - y1;
+	int x3 = x2;
+	int y3 = y2;
+	int x4 = x1;
+	int y4 = y1;
+	v2[x1][y1] = '#';
+	v2[x2][y2] = '#';
+	while(valid(x3+dx, y3+dy)) {
+		x3 += dx;
+		y3 += dy;
+		v2[x3][y3] = '#';
+		cnt2++;
+	}
+	
+	while (valid(x4-dx, y4-dy)) {
+		x4 -= dx;
+		y4 -= dy;
+		v2[x4][y4] = '#';
+		cnt2++;
+	}
+	
+
+}
+
+
+int main() {
+	string s;
+	vector<string> v;
+	while (fin >> s) {
+		v.push_back(s);
+	}
+	v2 = v;
+	set<char> antene;
+	for (auto it : v) {
+		for (auto it2 : it) {
+			if (it2 != '.') {
+				antene.insert(it2);
+			}
+		}
+	}
+
+	for (auto antena : antene) {
+		vector<pair<int, int>> pozitii;
+		for (int i = 0; i < v.size(); i++) {
+			for (int j = 0; j < v[i].size(); j++) {
+				if (v[i][j] == antena) {
+					pozitii.push_back({ i, j });
+				}
+			}
+		}
+
+		for (int i = 0;i < pozitii.size();i++) {
+			for (int j = i+1;j < pozitii.size();j++) {
+				match(pozitii[i], pozitii[j]);
+			}
+		}
+		
+	}
+	int cnt = 0;
+	for (auto it : v2) {
+		cout << it << endl;
+		for(auto it2:it)
+		if (it2 == '#')
+			cnt++;
+	}
+	cout << cnt<<endl;
+	return 0;
+}
