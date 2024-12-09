@@ -1,0 +1,114 @@
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <map>
+#include <set>
+using namespace std;
+
+ifstream fin("test.in");
+ifstream fin2("test2.in");
+vector<string>v2;
+
+long long dx[] = { -1,0,1,0 };
+long long dy[] = { 0,1,0,-1 };
+bool try1(vector<string> v) {
+	long long xStart, yStart;
+	for (long long i = 0;i < v.size();i++) {
+		for (long long j = 0;j < v[0].size();j++) {
+			if (v[i][j] == '^') {
+				xStart = i;
+				yStart = j;
+			}
+		}
+	}
+	long long dir = 0;
+	long long step = 0;
+	while (1) {
+		step++;
+		if (step > 100000) {
+			return true;
+		}
+		long long x = xStart + dx[dir];
+		long long y = yStart + dy[dir];
+		if (x < 0 || x >= v.size() || y < 0 || y >= v[0].size()) {
+			return false;
+		}
+		if (v[x][y] == '#') {
+			dir = (dir + 1) % 4;
+			continue;
+		}
+		xStart = x;
+		yStart = y;
+	}
+
+}
+long long d[100000];
+int main() {
+	string s;
+	fin >> s;
+	long long nrofchars = 0;
+	long long pos = 0;
+	string sol;
+	long long id = 0;
+	vector<pair<long long,long long>>st;
+	for (long long i = 0;i < s.size();i++) {
+		if (i % 2 == 0) {
+			nrofchars += s[i] - '0';
+			long long nr = s[i] - '0';
+			st.push_back({ id,nr });
+			id++;
+		}
+		else {
+			long long nr = s[i] - '0';
+			st.push_back({ -1,nr });
+		}
+		
+	}
+	bool ok = true;
+	while (ok) {
+		ok = false;
+		for (int i = st.size() - 1;i >= 0;i--) {
+			if (st[i].first == -1) {
+				continue;
+			}
+			for (int j = 0;j < i;j++)
+				if (st[j].first == -1) {
+					if (st[j].second >= st[i].second) {
+						ok = true;
+						if (st[j].second == st[i].second) {
+							swap(st[i], st[j]);
+						}
+						else {
+							int remains = st[j].second - st[i].second;
+							st[j].second = st[i].second;
+							st[j].first = st[i].first;
+							st[i].first = -1;
+							st.insert(st.begin() + j+1, { -1,remains });
+						}
+						i = -1;
+						break;
+					}
+				}
+		}
+	}
+	long long res=0;
+	int poss = 0;
+	for (auto it : st) {
+		if (it.first == -1) {
+			while (it.second--) {
+				//cout << '.';
+				poss++;
+			}
+		}
+		else {
+			while (it.second--) {
+				//cout << it.first;
+				res += poss * it.first;
+				poss++;
+			}
+		}
+	}
+	cout << res;
+	return 0;
+}
