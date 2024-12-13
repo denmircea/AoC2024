@@ -1,0 +1,63 @@
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include<algorithm>
+#include <math.h>
+
+using namespace std;
+
+ifstream fin("test.in");
+
+long long cmmdc(long long a, long long b) {
+	if (b == 0) return a;
+	return cmmdc(b, a % b);
+}
+
+long long cmmmc(long long a, long long b) {
+	return a * b / cmmdc(a, b);
+}
+
+long long ax, ay, bx, by, px, py;
+long long solutii = 0;
+int main() {
+
+	while (fin >> ax >> ay >> bx >> by >> px >> py) {
+		px += 10000000000000;
+		py += 10000000000000;
+		
+		/// ax * x + bx * y = px
+		/// ay * x + by * y = py
+		swap(ax, bx);
+		swap(ay, by);
+        
+		//cout << cmmmc(ax, ay)<<endl;
+		long long rez = cmmmc(ax, ay);
+		long long mx = rez / ax;
+		long long my = rez / ay;
+
+		//mx(px - bx * y) = my(py - by * y)
+		//mxpx - mxbx * y = mypy - myby * y
+		//mxpx - mypy = mxbx * y - myby * y
+		//mxpx - mypy = y(mxbx - myby)
+		//y = (mxpx - mypy) / (mxbx - myby)
+		if ((mx * px - my * py) % (mx * bx - my * by) == 0) {
+			long long y = (mx * px - my * py) / (mx * bx - my * by);
+			long long x1 = (px - bx * y) / ax;
+			long long x2 = (py - by * y) / ay;
+			if (x1 == x2) {
+				cout << x1 << " " << y << endl;
+				solutii += x1  + y*3;
+			}
+		}
+		// determine x solution
+		// ax * x + bx * y = px
+		
+
+	}
+	cout << solutii;
+	return 0;
+}
