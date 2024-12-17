@@ -1,0 +1,199 @@
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include<algorithm>
+#include <string>
+#include<set>
+#include <math.h>
+#include <stack>
+
+using namespace std;
+
+ifstream fin("test.in");
+ofstream fout("test.out");
+
+vector<long long> v;
+long long ra = 21539243;
+long long rb = 0;
+long long rc = 0;
+long long pozCurrenta = 0;
+string result;
+
+long long determinecombo(long long value) {
+	long long nr = 0;
+	if (value >= 0 && value <= 3) {
+		nr = value;
+	}
+	else if (value == 4) {
+		nr = ra;
+	}
+	else if (value == 5) {
+		nr = rb;
+	}
+	else if (value == 6) {
+		nr = rc;
+	}
+	else {
+		pozCurrenta = v.size();
+	}
+	return nr;
+}
+
+
+void runinstruction(long long operation, long long value) {
+	if (operation == 0) {
+		long long nr = determinecombo(value);
+		
+		long long pow2nr = pow(2, nr);
+		ra = ra / pow2nr;
+	}
+	else if (operation == 1) {
+		rb = (rb ^ value);
+	}
+	else if (operation == 2) {
+		rb = determinecombo(value) %8;
+	}
+	else if (operation == 3) {
+		if (ra == 0) {
+			return;
+		}
+		pozCurrenta = value - 2;
+	}
+	else if (operation == 4) {
+		rb = (rb ^ rc);
+	}
+	else if (operation == 5) {
+		if (result.size() == 0) {
+			result+= to_string(determinecombo(value) % 8);
+		}
+		else {
+			result += ",";
+			result += to_string(determinecombo(value) % 8);
+		}
+	}
+	else if (operation == 6) {
+		long long nr = determinecombo(value);
+
+		long long pow2nr = pow(2, nr);
+		rb = ra / pow2nr;
+	}
+	else if (operation == 7) {
+		long long nr = determinecombo(value);
+
+		long long pow2nr = pow(2, nr);
+		rc = ra / pow2nr;
+	}
+	else {
+		pozCurrenta = 2000000000;
+	}
+
+}
+
+string intToBinary(long long a) {
+	long long pp = (1LL<<62);
+	string res = "";
+	while (pp) {
+		if (pp & a) {
+			res += "1";
+		}
+		else
+			res += "0";
+		pp /= 2;
+	}
+	return res;
+}
+
+string runprogram(long long valueA) {
+	ra = valueA;
+	result = "";
+	rb = 0;
+	rc = 0;
+	//cout << "Output: "<<ra<<" "<<rb<<" "<<rc<<endl;
+	for (pozCurrenta = 0;pozCurrenta < v.size();pozCurrenta += 2) {
+		runinstruction(v[pozCurrenta], v[pozCurrenta + 1]);
+		if (result.size() > 0) {
+			string need = "2,4,1,3,7,5,1,5,0,3,4,1,5,5,3,0";
+			for (long long j = 0;j < min(result.size(), need.size());j++) {
+				if (result[j] != need[j]) {
+					return result;
+				}
+			}
+			string ress = intToBinary(valueA / (1LL << 12)) ;
+			
+			if (result.size() > 13
+				//&& ress == "000000000000000000000000000000000000000000000000000000000000001"
+				) {
+				cout << result << " " << valueA<<" "<< intToBinary(valueA) <<" "<< intToBinary(valueA / (1LL << 12)) << endl;
+				//return "";
+			}
+		}
+	}
+	/*cout << result;
+	cout << endl;*/
+	return result;
+}
+
+int main() {
+	long long x;
+	while (fin >> x) {
+		v.push_back(x);
+	}
+
+	//2, 4, 1, 3, 7, 5, 1, 5 2251799833169517 000000000001000000000000000000000000001001010010100111001101101
+	//					     216549835145216
+	//	2, 4, 1, 3, 7, 5, 1, 5 2251799833169599 000000000001000000000000000000000000001001010010100111010111111
+
+	for (long long j = 216549846240877;true;j++) {
+		if (j % 1000000==0) {
+			//cout << j / 1000000 << endl;
+		}
+		if (runprogram(j) == "2,4,1,3,7,5,1,5,0,3,4,1,5,5,3,0") {
+			cout << j << endl;
+			return 0;
+		}
+
+	}
+
+	
+	return 0;
+}
+
+
+//2 4  b = a % 8 (ultimii 3 biti) 		 xxx   000000000001000000000000000000000000001001010010100111001101101  101
+//1 3  b = b ^ 3 (negam ultimii 2 biti)	 xyy   101 ^ 011 -> 110 = 6
+//7 5  c = a / (2 ^ b)                       000000000001000000000000000000000000001001010010100
+//1 5  b = b ^ 5  						 yyx   110 ^ 101 -> 011 = 3
+//0 3  a = a / 8							 000000000001000000000000000000000000001001010010100111001101
+//4 1  b = b ^ c
+//000000000001000000000000000000000000001001010010100111001
+//000000000000000000000000000000000000000000000000000000000000011
+//
+//5 5  cout << b % 8      2 ->  010 100 001 011 111 101 001 101 000
+//3 0  return
+//
+//
+//000000000000000000000000000000000000001 001 010 010 100 111 001 101 101
+//000000000000000000000000000000000000001 001 010 010 100 111 001 101 101
+//000000000000000000000000000000000000000 110 001 001 111 000 101 000 100
+//
+//000000000000000000000000000000000000001 001 010 010 100 111 001 101 101
+//000000000000000000000000000000000000001 001 010 010 100 111 010 111 111
+//
+//000000000000000000000000000000000000001 110 001 001 111 000 101 000 100
+//
+//
+//2251799833169517
+//000000000001000000000000000000000000001001010010100111001101101
+//
+//
+//
+//000 | 110 001 001 111   -- - 5, 5, 3, 0
+//111 | 001 101 110 000    -- - 0, 3, 4, 1
+//000 000 000 000
+//
+//110001001111 -- 5530
+//111001101110000
