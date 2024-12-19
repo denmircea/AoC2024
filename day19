@@ -1,0 +1,89 @@
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include<algorithm>
+#include <string>
+#include<set>
+#include <math.h>
+#include <stack>
+#include <queue>
+
+using namespace std;
+
+ifstream fin("test.in");
+ifstream fin2("test2.in");
+ofstream fout("test.out");
+
+vector<string> v1;
+map<string, long long> m1;
+map<string, long long > moduri;
+
+long long match(string s) {
+	string initString = "";
+	set<string> visited;
+	deque<string> dq;
+	dq.push_back(initString);
+	long long nr = 0;
+	while (!dq.empty()) {
+		string current = dq.front();
+		dq.pop_front();
+		if (current.size() == s.size()) {
+			if (current == s) {
+				nr++;
+			}
+			continue;
+		}
+		for (long long i = 0; i < v1.size(); i++) {
+			string pattern = v1[i];
+			if (s.find(current + pattern) == 0) {
+				dq.push_back(current + pattern);
+				visited.insert(current + pattern);
+			}
+		}
+	}
+	return nr;
+}
+long long recursiveMatch(string current, string target) {
+	long long result = 0;
+	if (current == target) {
+		return 1;
+	}
+	for (auto it : v1) {
+		if (target.find(current + it) == 0) {
+			if (moduri.find(current + it) != moduri.end()) {
+				result += moduri[current + it];
+				continue;
+			}
+			long long resultaux = recursiveMatch(current + it, target);
+			//if(resultaux)
+			moduri[current + it] = resultaux;
+			result += resultaux;
+		}
+	}
+	return result;
+}
+int main() {
+	string s;
+	while (fin >> s) {
+		v1.push_back(s);  // patterns
+		m1[s]++;
+	}
+	long long res = 0;
+	while (fin2 >> s) {
+		/// cum obtii patternul s
+		moduri.clear();
+		long long ress = recursiveMatch("", s);
+		if (ress) {
+			res += ress;;
+			cout << s<<" "<< ress << endl;
+		}
+	}
+	cout << res;
+	
+	return 0;
+}
+
