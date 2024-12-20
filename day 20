@@ -1,0 +1,115 @@
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include<algorithm>
+#include <string>
+#include<set>
+#include <math.h>
+#include <stack>
+#include <queue>
+
+using namespace std;
+
+ifstream fin("test.in");
+ifstream fin2("test2.in");
+ofstream fout("test.out");
+vector<string> v;
+int dx[] = { -1, 0, 1, 0 };
+int dy[] = { 0, 1, 0, -1 };
+vector<vector<int>> distStart;
+vector<vector<int>> distEnd;
+int xStart, yStart, xEnd, yEnd;
+
+
+int bfs(int xs, int ys, int xex, int yex,char target) {
+	vector<vector<int>> dist(v.size(), vector<int>(v[0].size(), 100000));
+	queue<pair<int, int>> q;
+	q.push({ xs, ys });
+	dist[xs][ys] = 0;
+	while (!q.empty()) {
+		int x = q.front().first;
+		int y = q.front().second;
+		q.pop();
+		if (v[x][y]==target) {
+			break;
+		}
+		for (int dir = 0;dir < 4;dir++) {
+			int nx = x + dx[dir];
+			int ny = y + dy[dir];
+			if (nx >= 0 
+				&& nx < v.size() 
+				&& ny >= 0 
+				&& ny < v[0].size() 
+				&& (v[nx][ny] != '#')
+				&& dist[nx][ny] == 100000) {
+				dist[nx][ny] = dist[x][y] + 1;
+				q.push({ nx, ny });
+			}
+		}
+	}
+	if (v[xs][ys] == 'S') {
+		distStart = dist;
+		return dist[xEnd][yEnd];
+	}
+	else if (v[xs][ys] == 'E') {
+		distEnd = dist;
+		return dist[xStart][yStart];
+	}
+	return dist[xs][ys];
+}
+int main() {
+	string s;
+	while (fin >> s) {
+		v.push_back(s);
+	}
+	for (int i = 0;i < v.size();i++) {
+		for (int j = 0;j < v[0].size();j++) {
+			if (v[i][j] == 'S') {
+				xStart = i;
+				yStart = j;
+			}
+			else if (v[i][j] == 'E') {
+				xEnd = i;
+				yEnd = j;
+				
+			}
+		}
+	}
+	int initialValue = bfs(xStart, yStart, -10, -10,'E');
+	cout << initialValue<<endl; // 9448
+	int value2 = bfs(xEnd, yEnd, -10, -10, 'S');
+	cout << value2 << endl;
+	int result = 0;
+	for (int i = 0;i < v.size();i++) {
+		for (int j = 0;j < v[0].size();j++) {
+			if (v[i][j] == '.' || v[i][j] == 'S') {
+				// search all points at 20 manhattan distance
+				for (int x = -20;x <= 20;x++) {
+					for (int y = -20;y <= 20;y++) {
+						if (abs(x) + abs(y) <= 20 && abs(x)+abs(y)>=2) {
+							if (i + x >= 0 && i + x < v.size() && j + y >= 0 && j + y < v[0].size() && (v[i+x][j+y] == '.' || v[i+x][j+y] == 'E')) {
+								if (distStart[i][j] + distEnd[i + x][j + y] + abs(x) + abs(y) < initialValue) {
+									//cout << initialValue - distStart[i][j] + distEnd[i + x][j + y] << "\n";
+									int diff = initialValue - (distStart[i][j] + distEnd[i + x][j + y] + abs(x) + abs(y));
+									if (diff >=100)
+										//cout << i << " " << j << " " << i + x << " " << j + y << " " << diff << "\n";
+									result++;
+								}
+							}
+						}
+					}
+
+				}
+			}
+
+		}
+	}
+	cout << "rest" << " " << result;
+	
+	return 0;
+}
+
