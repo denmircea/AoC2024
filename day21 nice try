@@ -16,24 +16,15 @@
 using namespace std;
 
 ifstream fin("test.in");
-map<char, pair<long long, long long>> mp,mpMic;
+ifstream fin2("test2.in");
+ofstream fout("test.out");
+map<char, pair<long long, long long>> mp, mpMic;
 string levels;
-
-string dfs3(char a, char b,long long level);
-string dfs2(string input,long long level);
-set<string> files;
-string generateFileName(long long level) {
-	string name =  "metadata/" + to_string(level) + "_" + to_string(rand() % 1000000000) + "_" + to_string(rand() % 1000000000) + ".in";
-	while (files.find(name) != files.end())
-	{
-		name = "metadata/" + to_string(level) + "_" + to_string(rand() % 1000000000) + "_" + to_string(rand() % 1000000000) + ".in";
-	}
-	files.insert(name);
-	return name;
-}
-
+string dfs3(char a, char b, long long level);
+pair<long long, char>  dfs2(string input, long long level, char charPrev);
 map < pair<pair<char, char>, long long>, string> memorizam; // avem char -- starting character, starting char 2 -- long long numarul de nivele pec are le rezolva
-long long nivele = 25;
+long long nivele = 24;
+map < pair<char, char>, pair<pair<char, char>, long long > > posibilitati[26];
 string dfs3(char a, char b, long long level) {
 	auto p1 = mpMic[a];
 	auto p2 = mpMic[b];
@@ -135,65 +126,40 @@ string dfs3(char a, char b, long long level) {
 			solutions.push_back(aux);
 
 	}
-	string fileName = generateFileName(level);
-	ofstream fout2(fileName);
-	fout2 << solutions[0];
-	fout2.close();
+	if (solutions.size() == 2) {
+		if (a == '^' && b == '>') {
+			return solutions[0];
+		}
+		else if (a == 'v' && b == 'A') {
+			return solutions[0];
+		}
+		else if (a == '>' && b == '^') {
+			return solutions[1];
+		}
+		else if (a == 'A' && b == 'v') {
+			return solutions[1];
+		}
+		
+	}
 
-	return dfs2(fileName, level + 1);
+	return solutions[0];
 	
 
 }
-string dfs2(string input,long long level) {
-	if (level <10) {
-		cout << level<<" ";
+char charPrev = 'A';
+pair<long long,char> dfs2(string input, long long level, char prev) {
+	long long sum = 0;
+	for(auto it:input){
+		if (prev == it) {
+			sum++;
+			continue;
+		}
+		auto current = posibilitati[nivele][{prev, it}];
+		auto prevv = posibilitati[nivele - 1][{prev, it}];
+		sum += current.second;
+		prev = it;
 	}
-	if (level == levels.size())
-		return input;
-	string fileName = generateFileName(level);
-	ifstream fin3(input);
-	ofstream fout2(fileName);
-	char it;
-	while(fin3>>it) {
-		string res1;
-		if (memorizam.find({ {levels[level], it}, nivele - level }) != memorizam.end()) {
-			res1 = memorizam[{{levels[level], it}, nivele - level}];
-		}
-		else {
-			res1 = dfs3(levels[level], it, level);
-
-			// filenameul
-			if (level > 4) {
-				memorizam[{{levels[level], it}, nivele - level}] = res1;
-			}
-		}
-
-		//result += res1;
-
-		ifstream fin2(res1);
-	
-		char c;
-		string s;
-		const std::size_t bufferSize = 100000000; // Buffer size
-		std::vector<char> buffer(bufferSize); // Buffer to store chunks of data
-		while (fin2) {
-			fin2.read(buffer.data(), bufferSize); // Read up to bufferSize characters
-			streamsize bytesRead = fin2.gcount(); // Get the number of characters actually read
-			fout2.write(buffer.data(), bytesRead); // Write the characters to the output file
-		}
-		if (level <= 4) {
-			fin2.close(); // Close the file before reopening it
-			ofstream fout33(res1);
-			fout33 << '1';
-			fout33.close();
-		} else
-		fin2.close();
-
-		levels[level] = it;
-	}
-	fout2.close();
-	fin3.close();
-	return fileName;
+	return { sum,prev };
 }
 
 long long dfs1(char a, char b) {
@@ -262,7 +228,7 @@ long long dfs1(char a, char b) {
 				valid = false;
 			}
 		}
-		
+
 		for (long long i = 0; i < v[1].second; i++) {
 			aux += v[1].first;
 		}
@@ -298,47 +264,17 @@ long long dfs1(char a, char b) {
 		if (valid)
 			solutions.push_back(aux);
 	}
-	long long sz1 = 0;
-	long long sz2 = 0;
-	string fileName = generateFileName(0);
-	ofstream fout2;
-	fout2.open(fileName);
-	fout2 << solutions[0];
-	fout2.close();
-	string fileNameBig =  dfs2(fileName, 0);
-	//cout << endl << fileNameBig << endl;//" ";
-	char ch;
-	ifstream fin2(fileNameBig);
-	while (fin2 >> ch) {
-		//cout << ch;
-		sz1++;
-	}
-	if (solutions.size() > 1) {
-		string fileName = generateFileName(0);
-		ofstream fout2;
-		fout2.open(fileName);
-		fout2 << solutions[1];
-		fout2.close();
-		string fileNameBig = dfs2(fileName, 0);
-		//cout << endl << fileNameBig << endl;//" ";
-		char ch;
-		ifstream fin2(fileNameBig);
-		while (fin2 >> ch) {
-			//cout << ch;
-			sz2++;
-		}
-	}
-	if (solutions.size() == 1)
-		return sz1;
-	return min(sz1,sz2);
-	/*for (auto it : solutions) {
-		string aux = dfs2(it,0);
-		if (aux.size() < res.size()) {
+	auto res = make_pair(0LL,0LL);
+
+	for (auto it : solutions) {
+		auto aux = dfs2(it, 0, charPrev);
+		if(res.first == 0 || aux.first < res.first)
 			res = aux;
-		}
 	}
-	return res;*/
+	charPrev = res.second;
+	return res.first;
 }
+
 
 int main() {
 	mp['A'] = { 3,2 };
@@ -359,28 +295,76 @@ int main() {
 	mpMic['>'] = { 1,2 };
 
 	string s;
+	string toate = "A^<v>";
+	for (auto it : toate) {
+		for (auto it2 : toate) {
+			string result  = dfs3(it, it2,0);
+			
+			posibilitati[0][{it, it2}] = { {result[0], result[result.size()-1]}, (long long)result.size()};
+			//else cout << it << " " << it2 << endl;
+		}
+	}
+	for (long long nivel = 1;nivel < 25;nivel++) {
+		long long nivelPrev = nivel - 1;
+		for (auto it : toate) {
+			for (auto it2 : toate) {
+				// toate combinatiile
+				string result = dfs3(it, it2, 0);
+				/*if (result.size() == 1) {
+					continue;
+				}*/
+				char prev = 'A';
+				bool firstOne = true;
+				if (it == it2 && it == '^') {
+					cout << it << " " << it2 << " " << result << endl;
+				}
+				for (auto itLocal : result) {
+					auto current = posibilitati[nivel][{it, it2}];
+					auto prevLevel = posibilitati[nivelPrev][{prev, itLocal}];
+					
+					if (firstOne) {
+						if (prev == itLocal) {
+							current.second++;
+							posibilitati[nivel][{it, it2}] = current;
+
+							continue;
+						}
+						current.first = prevLevel.first;
+						firstOne = false;
+					}
+					if (itLocal == prev) {
+						current.second++;
+					}else 
+					current.second += prevLevel.second;
+					current.first.second = 'A';
+					posibilitati[nivel][{it, it2}] = current;
+					prev = itLocal;
+				}
+			}
+		}
+	}
 	long long resp = 0;
 	while (fin >> s) {
 		long long sum = 0;
 		auto it = 'A';
+		charPrev = 'A';
 		levels = string(nivele, 'A');
 		for (auto i2 : s) {
 			auto it2 = i2;
 			//cout<< dfs1(it, it2).size()<<" ";
-			sum += dfs1(it, it2);
-
+			auto res = dfs1(it, it2);
+			//cout << res << endl;;
+			sum += res;
 			it = it2;
 		}
+		cout << sum << endl;
 		long long nr = 0;
 		for (auto i2 : s)
 			if (i2 >= '0' && i2 <= '9')
 				nr = nr * 10 + i2 - '0';
-		resp += sum * nr;
+		resp += sum *nr;
 	}
-	cout <<"\nresp "<< resp;
+
+	cout << resp;
 	return 0;
 }
-
-
-
-
