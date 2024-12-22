@@ -1,0 +1,100 @@
+#include <iostream>
+#include <fstream>
+#include <deque>
+#include <map>
+#include <set>
+#define modulo 16777216
+using namespace std;
+
+ifstream fin("test.in");
+int numarCurent = 0;
+map < pair< pair<int, int>, pair<int, int>>, int> mp[2200];
+set <pair<pair<int, int>, pair<int, int>>> s;
+
+int calculare(long long n) {
+	long long rez = n;
+	long long xn = rez * 64;
+	rez = (xn ^ rez);
+	rez = rez % modulo;
+	long long x32 = rez / 32;
+	rez = (x32 ^ rez);
+	rez = rez % modulo;
+	long long x2048 = rez * 2048;
+	rez = (x2048 ^ rez);
+	rez = rez % modulo;
+	return rez;
+
+}
+
+bool test(deque<pair<int, int>> q, int price) {
+	int sum = 0;
+	if (q.size() != 4)
+		return false;
+	if (mp[numarCurent].find({{q[0].second, q[1].second}, {q[2].second, q[3].second}}) == mp[numarCurent].end())
+		mp[numarCurent][{{q[0].second, q[1].second}, { q[2].second, q[3].second }}] = price;
+	/*if (q[0].second == -2)
+		if (q[1].second == 1)
+			if (q[2].second == -1)
+				if (q[3].second == 3)
+					return true;*/
+	return false;
+}
+
+int main() {
+	int x;
+	long long sum = 0;
+	while (fin >> x) {
+		deque<pair<int,int>> q;
+		int nr = 0;
+		q.push_back({ x % 10,0 });
+		int initial = x;
+		while (true) {
+			int pret = initial % 10;
+			int numar = calculare(initial);
+			auto ultimul = q.back();
+			q.push_back({ numar % 10, numar%10 - ultimul.first});
+			if (q.size() > 4) {
+				q.pop_front();
+			}
+			/*for (auto it : q) {
+				cout << it.first << " " << it.second << endl;
+			}*/
+			if (test(q, numar%10)) {
+				cout << pret << " " << numar%10 <<" " << initial << " "<<nr << endl;
+				break;
+			}
+			if (nr > 2000)
+				break;
+			//cout << endl;
+			initial = numar;
+			nr++;
+		}
+		for (auto it : mp[numarCurent]) {
+			s.insert(it.first);
+		}
+		numarCurent++;
+	
+		//sum += initial;
+		/*for (auto it : q) {
+			cout << it.first << " " << it.second << endl;
+		}*/
+	}
+	long long scoreMax = 0;
+	int xx = 0;
+	for (auto it : s) {
+		long long sum = 0;
+		for (int i = 0;i < numarCurent;i++) {
+			if (mp[i].find(it) != mp[i].end())
+				sum += mp[i][it];
+		}
+		if (sum>scoreMax)
+		{
+			scoreMax = sum;
+		}
+		xx++;
+		if (xx % 100 == 0) {
+			cout << xx << endl;
+		}
+	}
+	cout << scoreMax;
+}
