@@ -1,0 +1,78 @@
+#include <iostream>
+#include <fstream>
+#include <deque>
+#include <map>
+#include <set>
+#include <vector>
+#include <unordered_set>
+#define modulo 16777216
+using namespace std;
+
+ifstream fin("test.in");
+map <string, set<string>> mp;
+set <string> viz;
+set<set<string>> grup[20];
+int sol = 0;
+int main() {
+	string s1, s2;
+	while (fin >> s1 >> s2) {
+		mp[s1].insert(s2);
+		mp[s2].insert(s1);
+		viz.insert(s1);
+		viz.insert(s2);
+	}
+	int nr = 0;
+	for (auto it : viz) {
+		nr++;
+		for (auto it2 : viz) {
+			if (it < it2) {
+				for (auto it3 : viz) {
+					if (it2 < it3) {
+
+						if (mp[it].find(it2) != mp[it].end() && mp[it2].find(it3) != mp[it2].end() && mp[it3].find(it) != mp[it3].end()) {
+							set<string> aux;
+							aux.insert(it);
+							aux.insert(it2);
+							aux.insert(it3);
+							grup[3].insert(aux);
+							sol++;
+						}
+					}
+				}
+			}
+		}
+	}
+	int numar = 4;
+	while (1) {
+		if (numar >= 400)
+			break;
+		int nr2 = 0;
+		for (auto it : grup[numar - 1]) {
+			nr2++;
+			if (nr2 % 10 == 0) {
+				cout << nr2 <<" "<<grup[numar - 1].size() << endl;
+			}
+			for (auto it2 : viz) {
+				if (it.find(it2) == it.end()) {
+					bool ok = 1;
+					for (auto it3 : it) {
+						if (mp[it3].find(it2) == mp[it3].end()) {
+							ok = 0;
+							break;
+						}
+					}
+					if (ok) {
+						set<string> aux = it;
+						aux.insert(it2);
+						grup[numar].insert(aux);
+						//sol++;
+					}
+				}
+			}
+		}
+
+
+		numar++;
+	}
+	cout << sol;
+}
