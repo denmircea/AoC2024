@@ -1,0 +1,422 @@
+/// 1.  am observat ca toate solutiile din Z aveau ca si operatie assigned XOR, mai putin cele 3: z11,z31,z38
+/// 2. am incercat sa rulez un brut care sa le rezolve doar pe cele 3  ( e clar ca operatiile alese pentru inlocuire sunt de tip XOR)
+/// 3. se observa sesizabil mai mult timp de executie pentru 3 dintre valori incercand brut (198,181,177, in cazul meu) realizez ca cele 3 variabile z11,z31,z38 fac parte din multimea 198,181,177
+/// 4. rulez brut pentru ultimul numar din grup despre care nu am niciun indiciu
+/// 5. posibile optimizari: sa nu mai las solutia sa ruleze desi gasesc deja un z = 0 /1 care nu corespunde cu bit ul pe care am rulat input ul, 2. sa prioritizez z-urile pe care le observ cu probleme
+
+
+#include <iostream>
+#include <fstream>
+#include <deque>
+#include <map>
+#include <set>
+#include <vector>
+#include <unordered_set>
+#include <unordered_map>
+#include <string>
+#define modulo 16777216
+using namespace std;
+
+ifstream fin("test.in");
+ifstream fin2("test2.in");
+unordered_map<string, long long> mp, initialMp;
+vector <pair< pair<string, string>, pair<string, string> > > operatii, initialOperatii;
+set <pair< pair<string, string>, pair<string, string>> > added;
+set<long long> implicati;
+void solve(string s);
+long long preSolve(string s1, string s2, string s3) {
+	/// if just 1 missing it's ok
+	long long unsolved = 0;
+	if (mp[s1] == -1) {
+		unsolved++;
+	}
+	if (mp[s2] == -1) {
+		unsolved++;
+	}
+	if (mp[s3] == -1) {
+		unsolved++;
+	}
+	return unsolved;
+}
+
+void solveAND(string s1, string s2, string s3) {
+	//preSolve(s1, s2, s3);
+	long long unsolved = 0;
+	if (mp[s1] == -1) {
+		unsolved++;
+	}
+	if (mp[s2] == -1) {
+		unsolved++;
+	}
+	if (mp[s3] == -1) {
+		unsolved++;
+	}
+	if (unsolved == 0) {
+		return;
+	}
+	if (unsolved == 1) {
+		if (mp[s1] == -1) {
+			if (mp[s2] == -1) {
+				solve(s2);
+			}
+			if (mp[s2] == 1) {
+				mp[s1] = mp[s3];
+				return;
+			}
+			else if (mp[s2] == 0) {
+				mp[s3] = 0;
+			}
+		}
+		else if (mp[s2] == -1) {
+			if (mp[s1] == -1) {
+				solve(s1);
+			}
+			if (mp[s1] == 1) {
+				mp[s2] = mp[s3];
+			}
+			else if (mp[s1] == 0) {
+				mp[s3] = 0;
+			}
+		}
+		else {
+			mp[s3] = mp[s1] & mp[s2];
+		}
+	}
+	if (unsolved == 2) {
+		if (mp[s3] == 1) {
+			mp[s1] = mp[s2] = 1;
+			return;
+		}
+		if (mp[s3] == -1) {
+			if (mp[s1] == 0 || mp[s2] == 0) {
+				mp[s3] = 0;
+				return;
+			}
+			if (mp[s1] == 1) {
+				mp["mereuNu"] = 0;
+				operatii.push_back({ {s2, s3}, {"XOR", "mereuNu"} });
+			}
+			else if (mp[s2] == 1) {
+				mp["mereuNu"] = 0;
+				operatii.push_back({ {s1, s3}, {"XOR", "mereuNu"} });
+			}
+		}
+	}
+}
+void solveOR(string s1, string s2, string s3) {
+	//preSolve(s1, s2, s3);
+	long long unsolved = 0;
+	if (mp[s1] == -1) {
+		unsolved++;
+	}
+	if (mp[s2] == -1) {
+		unsolved++;
+	}
+	if (mp[s3] == -1) {
+		unsolved++;
+	}
+	if (unsolved == 0) {
+		return;
+	}
+	if (unsolved == 1) {
+		if (mp[s1] == -1) {
+			if (mp[s2] == -1) {
+				solve(s2);
+			}
+			if (mp[s2] == 0) {
+				mp[s1] = mp[s3];
+				return;
+			}
+			else if (mp[s2] == 1) {
+				mp[s3] = 1;
+			}
+			
+		}
+		else if (mp[s2] == -1) {
+			if (mp[s1] == -1) {
+				solve(s1);
+			}
+			if (mp[s1] == 0) {
+				mp[s2] = mp[s3];
+			}
+			else if (mp[s1] == 1) {
+				mp[s3] = 1;
+			}
+		}
+		else {
+			mp[s3] = mp[s1] | mp[s2];
+		}
+	}
+	else if (unsolved == 2) {
+		if (mp[s3] == 0) {
+			mp[s1] = mp[s2] = 0;
+			return;
+		}
+		if (mp[s3] == -1) {
+			if (mp[s1] == 1 || mp[s2] == 1) {
+				mp[s3] = 1;
+			}
+		}
+		if (mp[s1] == 0) {
+			mp["mereuNu"] = 0;
+			if (added.find({ {s2, s3}, {"XOR", "mereuNu"} }) == added.end()) {
+				operatii.push_back({ {s2, s3}, {"XOR", "mereuNu"} });
+				added.insert({ {s2, s3}, {"XOR", "mereuNu"} });
+			}
+		}
+		else if (mp[s2] == 0) {
+			mp["mereuNu"] = 0;
+			if (added.find({ {s1, s3}, {"XOR", "mereuNu"} }) == added.end()) {
+				operatii.push_back({ {s1, s3}, {"XOR", "mereuNu"} });
+				added.insert({ {s1, s3}, {"XOR", "mereuNu"} });
+			}
+		}
+	}
+}
+void solveXOR(string s1, string s2, string s3) {
+	//preSolve(s1, s2, s3);
+	long long unsolved = 0;
+	if (mp[s1] == -1) {
+		unsolved++;
+	}
+	if (mp[s2] == -1) {
+		unsolved++;
+	}
+	if (mp[s3] == -1) {
+		unsolved++;
+	}
+	if (unsolved == 0) {
+		return;
+	}
+	if (unsolved == 1) {
+		if (mp[s1] == -1) {
+			if (mp[s3] == 0) {
+				mp[s1] = mp[s2];
+				return;
+			}
+			else {
+				mp[s1] = (mp[s2]) ? 0 : 1;
+			};
+		}
+		else if (mp[s2] == -1) {
+			if (mp[s3] == 0) {
+				mp[s2] = mp[s1];
+			}
+			else {
+				mp[s2] = (mp[s1]) ? 0 : 1;
+			}
+		}
+		else {
+			mp[s3] = mp[s1] ^ mp[s2];
+		}
+	}
+	else if (unsolved == 2) {
+		mp["mereuNu"] = 0;
+		mp["mereuDa"] = 1;
+		if (mp[s3] == 1) {
+			if (added.find({ {s1, s2}, {"AND", "mereuNu"} }) == added.end()) {
+				operatii.push_back({ {s1, s2}, {"AND", "mereuNu"} });
+				added.insert({ {s1, s2}, {"AND", "mereuNu"} });
+			}
+			if (added.find({ {s1, s2}, {"OR", "mereuDa"} }) == added.end()) {
+				operatii.push_back({ {s1, s2}, {"OR", "mereuDa"} });
+				added.insert({ {s1, s2}, {"OR", "mereuDa"} });
+			}
+		}
+		else if (mp[s1] == 1) {
+			if (added.find({ { s2,s3 }, { "AND", "mereuNu" } }) == added.end()) {
+				operatii.push_back({ {s2, s3}, {"AND", "mereuNu"} });
+				added.insert({ {s2, s3}, {"AND", "mereuNu"} });
+			}
+		}
+		else if (mp[s2] == 1) {
+			if (added.find({ {s1, s3}, {"AND", "mereuNu"} }) == added.end()) {
+				operatii.push_back({ {s1, s3}, {"AND", "mereuNu"} });
+				added.insert({ {s1, s3}, {"AND", "mereuNu"} });
+			}
+		}
+		
+	}
+}
+
+
+void solve(string s) {
+	if (mp[s] != -1)
+		return;
+	for (auto it : operatii) {
+		if (it.first.first == s || it.first.second == s || it.second.second == s) {
+			if (it.second.first == "AND") {
+				solveAND(it.first.first, it.first.second, it.second.second);
+			}
+			else if (it.second.first == "OR") {
+				solveOR(it.first.first, it.first.second, it.second.second);
+			}
+			else if(it.second.first == "XOR"){
+				solveXOR(it.first.first, it.first.second, it.second.second);
+			}
+		}
+	}
+}
+
+bool trySolve(long long aa,long long bb,long long x, long long y,long long z, long long t, long long k) {
+	mp.clear();
+	operatii.clear();
+	if (initialMp.size() > 0) {
+		mp = initialMp;
+		operatii = initialOperatii;
+	}
+	else {
+		ifstream fin2("test2.in");
+		for (long long i = 0;i <= 44;i++) {
+			long long pp = (1LL << i);
+			mp["x" + to_string(i / 10) + to_string(i % 10)] = (pp & aa) ? 1 : 0;
+			mp["y" + to_string(i / 10) + to_string(i % 10)] = (pp & bb) ? 1 : 0;
+		}
+		
+		string s1, s2, s3, s4, s5;
+
+		while (fin2 >> s1 >> s2 >> s3 >> s4 >> s5) {
+			if (s1 > s3) {
+				swap(s1, s3);
+			}
+			operatii.push_back({ {s1, s3}, {s2, s5} });
+			if (mp.find(s1) == mp.end()) {
+				mp[s1] = -1;
+			}
+			if (mp.find(s3) == mp.end()) {
+				mp[s3] = -1;
+			}
+			if (mp.find(s5) == mp.end()) {
+				mp[s5] = -1;
+			}
+		}
+		initialMp = mp;
+		initialOperatii = operatii;
+	}
+	swap(operatii[t].second.second, operatii[k].second.second);
+	if (operatii[x].second.first == "XOR" &&
+		operatii[y].second.first == "XOR" && 
+		operatii[z].second.first == "XOR") {
+		swap(operatii[x].second.second, operatii[107].second.second);
+		swap(operatii[y].second.second, operatii[50].second.second);
+		swap(operatii[z].second.second, operatii[10].second.second); /// cautate in input
+	}
+	else
+		return false;
+	bool ok = true;
+	long long nr = 0;
+	while (ok) {
+		nr++;
+		ok = false;
+		for (auto it : mp) {
+			if (it.second < 0) {
+				long long mpSize = mp.size();
+				solve(it.first);
+				if (nr < 50 && operatii.size()) {
+					ok = true;
+				}
+				
+			}
+			
+		}
+		auto operatii2 = vector< pair< pair<string, string>, pair<string, string> > >();
+		for (auto& it : operatii) {
+			if (mp[it.first.first] != -1 && mp[it.first.second] != -1 && mp[it.second.second] != -1) {
+				it.first.first = "canceled";
+			}
+			else {
+				operatii2.push_back(it);
+			}
+		}
+		operatii = operatii2;
+	}
+	long long sum = 0;
+	for (auto it :mp) {
+		if (it.first[0] == 'z') {
+			//cout << it->second;
+			long long cif1 = it.first[1] - '0';
+			long long cif2 = it.first[2] - '0';
+			sum += (it.second) * (1LL << (cif1 * 10 + cif2));
+		}
+	}
+	
+	fin2.close();
+	if (sum == aa + bb) {
+		cout << x << " " << y << " " << z << endl;
+	}
+	return sum == (aa + bb);
+}
+
+bool operatieValida(int poz) {
+	if (initialOperatii[poz].second.first != "XOR")
+		return false;
+	if (poz == 198 || poz == 181 || poz == 177)
+		return true;
+	//if (initialOperatii[poz].first.first[0] == 'x' && initialOperatii[poz].first.second[0] == 'y' && initialOperatii[poz].first.second[1] <= '9')
+	//	return false;
+	//if (initialOperatii[poz].second.second[0] == 'z' && initialOperatii[poz].second.second[1] <= '9')
+	//	return false;
+	return false;
+}
+int main() {
+	string s;
+	long long a;
+	/*while (fin >> s >> a) {
+		mp[s] = a;
+	}*/
+	long long x = (1LL << 38) -1;
+	long long y = (1LL << 38) -1;
+	for (long long i1 = 198;i1 >=0;i1--) {
+		cout << i1 << endl;
+		if (initialOperatii.size() > 0 && !operatieValida(i1))
+			continue;
+		for (long long j1 = 181;j1 >= 0;j1--) {
+			if (initialOperatii.size() > 0 && !operatieValida(j1))
+				continue;
+			for (long long z1 = 177; z1 >= 0;z1--) {
+				if (initialOperatii.size() > 0 && !operatieValida(z1))
+					continue;
+				for(long long k1 = 216; k1 >=0;k1--)
+					for (long long t1 = 110; t1 >= 0;t1--) {
+						if (i1 == j1 || i1 == z1 || i1 == t1 || i1 == k1 || j1 == z1 || j1 == t1 || j1 == k1 || z1 == t1 || z1 == k1 || t1 == k1)
+							continue;
+					if (initialOperatii.size() > 0 && !operatieValida(z1))
+						continue;
+					if (trySolve(x, y, i1, j1, z1, t1,k1)) {
+
+						set<string> sol;
+						sol.insert(initialOperatii[198].second.second);
+						sol.insert(initialOperatii[181].second.second);
+						sol.insert(initialOperatii[177].second.second);
+						sol.insert(initialOperatii[110].second.second);
+						sol.insert(initialOperatii[216].second.second);
+						sol.insert(initialOperatii[107].second.second);
+						sol.insert(initialOperatii[50].second.second);
+						sol.insert(initialOperatii[10].second.second);
+						for (auto it : sol)
+							cout << it << ",";
+						return 0;
+					}
+					if (!operatieValida(i1)) {
+						z1 = -1;
+						j1 = -1;
+						t1 = -1;
+						k1 = -1;
+						break;
+					}
+					if (!operatieValida(j1)) {
+						z1 = -1;
+						k1 = -1;
+						t1 = -1;
+						break;
+					}
+
+				}
+			}
+		}
+	}
+					
+				
+
+
+}
